@@ -3,6 +3,9 @@ import { api } from '../services/api';
 import { format , parseISO } from 'date-fns';
 import ptBr from 'date-fns/locale/pt-BR';
 import { convertDurationToTimeString } from '../utils/convertDurationToTimeString';
+import Image from 'next/image';
+
+import style from './home.module.scss';
 
 type File = {
   url: string;
@@ -23,15 +26,45 @@ type Episode = {
 }
 
 type HomeProps = {
-  episodes: Array<Episode>
+  lastEpisodes: Array<Episode>,
+  allEpisodes: Array<Episode>
 }
 
 
-export default function Home(props: HomeProps) {
+export default function Home({lastEpisodes, allEpisodes}: HomeProps) {
   return (
-    <div>
-      <h1>App</h1>
-      <p>{JSON.stringify(props.episodes)}</p>
+    <div className={style.homepage}>
+      <section className={style.lastEpisodes}>
+        <h2>Últimos lançamentos</h2>
+        <ul>
+          {lastEpisodes.map(episode =>{
+            return(
+              <li key={episode.id}>
+                <Image
+                  width={192}
+                  height={192} 
+                  src={episode.thumbnail} 
+                  alt={episode.title}
+                  objectFit="cover"
+                />
+                
+                <div className={style.episodeDetails}>
+                  <a href="#">{episode.title}</a>
+                  <p>{episode.members}</p>
+                  <span>{episode.publishedAt}</span>
+                  <span>{episode.duration}</span>
+                </div>
+                <button type="button">
+                  <img src="/play-green.svg" alt="Tocar episódio"/>
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      </section>
+      <section className={style.allEpisodes}>
+
+      </section>
     </div>
   )
 }
@@ -59,9 +92,13 @@ export const getStaticProps: GetStaticProps = async () => {
     }
   })
 
+  const lastEpisodes = episodes.slice(0,2);
+  const allEpisodes = episodes.slice(2, episodes.lenght);
+
   return {
 		props: {
-			episodes
+			lastEpisodes,
+      allEpisodes
 		},
 		revalidate: 60 * 60 * 8
 	}
